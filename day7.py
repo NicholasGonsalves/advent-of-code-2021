@@ -15,13 +15,18 @@ def part_one(positions):
     return int(sum([abs(x - optimal) for x in positions]))
 
 
+def sum_1_to_n(n):
+    return n*(n+1)//2
+
+
 def part_two(positions):
     # optimal position is the mean (though unknown if floor(mean) or floor(mean)+1)
     mean = sum(positions) / len(positions)
     optimal_options = [int(mean), round(mean)]
+
     return min(
         [
-            int(sum([sum(range(1, abs(x - optimal) + 1)) for x in positions]))
+            int(sum([sum_1_to_n(x - optimal) for x in positions]))
             for optimal in optimal_options
         ]
     )
