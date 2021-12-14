@@ -19,11 +19,6 @@ def get_pairs(polymer):
     return pairs
 
 
-def insert_base(pair, base):
-    """Given a polymer pair, return the new polymer of length 3."""
-    return f"{pair[0]}{base}{pair[1]}"
-
-
 def update_base_count(base, count, base_counts):
     """Increase the 'base_count' for the given 'base' by 'count'."""
     if base not in base_counts:
@@ -49,7 +44,7 @@ def step(polymer_counts, base_counts, rules):
 
     for pair, count in polymer_counts.items():
         new_base = rules.get(pair)
-        new_polymer = insert_base(pair, new_base)
+        new_polymer = f"{pair[0]}{new_base}{pair[1]}"
         base_counts = update_base_count(new_base, count, base_counts)
         new_polymers_counts = update_polymer_count(count, new_polymer, new_polymers_counts)
 
