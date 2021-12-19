@@ -40,24 +40,23 @@ def parse_packet(binary, literal_values=None, versions=None):
         return literal_values, versions, packet_data
 
     # Operator packet
+    sub_packets = None
     length_type_id = packet_data[0]
     if length_type_id == '0':
         len_sub_packets = int(packet_data[1:16], 2)
         sub_packets = packet_data[16:16+len_sub_packets]
         remaining_packets = packet_data[16+len_sub_packets:]
         literal_values, versions, sub_packets = parse_packet(sub_packets, literal_values, versions)
-        try:
-            return parse_packet(remaining_packets, literal_values, versions)
-        except Exception as e:
-            return literal_values, versions, remaining_packets
+        sub_packets = remaining_packets
     elif length_type_id == '1':
         num_sub_packets = int(packet_data[1:12], 2)
         sub_packets = packet_data[12:]
         literal_values, versions, sub_packets = parse_packet(sub_packets, literal_values, versions)
-        if sub_packets and (int(sub_packets) != 0):
-            return parse_packet(sub_packets, literal_values, versions)
-        else:
-            return literal_values, versions, sub_packets
+
+    try:
+        return parse_packet(sub_packets, literal_values, versions)
+    except Exception as e:
+        return literal_values, versions, sub_packets
 
 
 def part_one(packets):
