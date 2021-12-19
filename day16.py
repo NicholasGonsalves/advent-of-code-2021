@@ -46,8 +46,6 @@ def parse_packet(binary, literal_values=None, versions=None):
         sub_packets = packet_data[16:16+len_sub_packets]
         remaining_packets = packet_data[16+len_sub_packets:]
         literal_values, versions, sub_packets = parse_packet(sub_packets, literal_values, versions)
-        if not remaining_packets and sub_packets and (int(sub_packets) != 0):
-            return parse_packet(sub_packets, literal_values, versions)
         try:
             return parse_packet(remaining_packets, literal_values, versions)
         except Exception as e:
