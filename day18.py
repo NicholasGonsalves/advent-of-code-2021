@@ -2,6 +2,8 @@
 import ast
 from typing import Optional
 from collections import namedtuple
+from itertools import combinations
+from copy import deepcopy
 
 
 def read_file(file_name: str):
@@ -30,24 +32,18 @@ class Number:
         self.load_tree()
 
     def __str__(self):
-        self.print_tree(self.root)
         return str(self.number)
 
     def __add__(self, other):
-        self.number = [self.number, other]
+        self.number = [self.number, other.number]
         self.load_tree()
-        self.find_exploder()
-        # explode, reduce, etc, etc
-        ...
+        while self.explode() or self.split():
+            self.update_number_from_tree()
+            continue
+        return self
 
-    def print_tree(self, node, level=0):
-        if node is not None:
-            self.print_tree(node.l, level + 1)
-            if node.v is not None:
-                print(' ' * 2 * level + '->', node.v)
-            else:
-                print(' ' * 2 * level + '->')
-            self.print_tree(node.r, level + 1)
+    def __radd__(self, other):  # required so sum() works with this class
+        return self + other
 
     def load_tree(self) -> None:
         self.root = self.load_node(self.root, self.number)
@@ -78,7 +74,6 @@ class Number:
     def find_exploder(self, root, depth=0):
         # find leftmost pair nested 4 deep
         if root:
-            # First recur on left child
             exploder = self.find_exploder(root.l, depth + 1)
             if exploder: return exploder
             if depth == 4:
@@ -135,16 +130,66 @@ class Number:
             return str(node.v)
         return '[' + self.get_number_string_from_tree(node.l) + ',' + self.get_number_string_from_tree(node.r) + ']'
 
+    def find_to_split(self, root):
+        # find first value greater than or equal to 10
+        if root:
+            split = self.find_to_split(root.l)
+            if split: return split
+            if (root.v is not None) and (root.v >= 10):
+                return root
+            split = self.find_to_split(root.r)
+            if split: return split
+        return None
+
+    def split(self):
+        to_split = self.find_to_split(self.root)
+        if to_split is None: return False
+
+        if to_split.v % 2 == 0:
+            l_val = r_val = to_split.v//2
+        else:
+            l_val = to_split.v // 2
+            r_val = to_split.v // 2 + 1
+
+        to_split.l = Node(value=l_val, parent=to_split)
+        to_split.r = Node(value=r_val, parent=to_split)
+        to_split.v = None
+
+        return True
+
+    def get_magnitude(self):
+        return self.magnitude(self.root)
+
+    def magnitude(self, root):
+        if root.v is not None:
+            return root.v
+        return 3 * self.magnitude(root.l) + 2 * self.magnitude(root.r)
+
 
 def part_one(homework):
-    number = Number(homework[0])
-    number.explode()
-    number.update_number_from_tree()
-    print(number)
+    numbers = [Number(number) for number in homework]
+    answer = sum(numbers[1:], start=numbers[0])
+    magnitude = answer.get_magnitude()
+    return magnitude
+
+
+def update_max_magnitude_with_pair(a, b, max_magnitude):
+    answer = a + b
+    magnitude = answer.get_magnitude()
+    if magnitude > max_magnitude:
+        max_magnitude = magnitude
+    return max_magnitude
 
 
 def part_two(homework):
-    ...
+    # just try all combinations
+    max_magnitude = 0
+    numbers = [Number(number) for number in homework]
+    pairs = combinations(numbers, 2)
+    for a, b in pairs:
+        max_magnitude = update_max_magnitude_with_pair(deepcopy(a), deepcopy(b), max_magnitude)
+        max_magnitude = update_max_magnitude_with_pair(deepcopy(b), deepcopy(a), max_magnitude)
+    return max_magnitude
 
 
 if __name__ == "__main__":
