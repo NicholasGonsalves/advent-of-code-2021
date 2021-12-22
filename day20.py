@@ -50,7 +50,7 @@ def get_index_for_enhancement(conv):
 
 
 def extend_image_with_infinite_tile_padding(image, tile):
-    """Pad."""
+    """Pad image with a single outer layer of 'tile' so we pick up the convolution correctly."""
     tile_row = [tile for _ in range(len(image[0])+2)]
     new_image = [tile_row]
     for row in image:
