@@ -1,4 +1,4 @@
-"""Day 19."""
+"""Day 20."""
 
 
 def read_file(file_name: str):
